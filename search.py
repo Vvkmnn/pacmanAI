@@ -11,11 +11,12 @@ In search.py, you will implement generic search algorithms which are called
 by Pacman agents (in searchAgents.py).
 """
 
-### Imports
+# Imports
 
 import util
 
-### Parameters
+# Parameters
+
 
 class SearchProblem:
     """
@@ -60,7 +61,8 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
-### Search Strategies
+# Search Strategies
+
 
 def tinyMazeSearch(problem):
     """
@@ -80,7 +82,7 @@ def depthFirstSearch(problem):
     Inputs:
     ----
     problem: A problem to search through and setup. 
-    
+
     Returns:
     ----
     path: list of actions actions that reach the goal state.  
@@ -91,13 +93,13 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    # Intialize the frontier using a Stack queue data type (LIFO) 
+    # Intialize the frontier using a Stack queue data type (LIFO)
     frontier = util.Stack()
     # Intialize the explored region:
     explored = set()
 
     # Push the root node to the frontier, in the form: node.state, node.actions
-    frontier.push((problem.getStartState(),[]))
+    frontier.push((problem.getStartState(), []))
 
     # while it's not empty
     while not frontier.isEmpty():
@@ -105,88 +107,86 @@ def depthFirstSearch(problem):
         # pop the last-in leaf from the frontier
         node, actions = frontier.pop()
 
-        # Get the successors of the nodes 
+        # Get the successors of the nodes
         for coord, direction, steps in problem.getSuccessors(node):
-            #print coord, direction, steps
+            # print coord, direction, steps
             # Check if the new leaf is in visited
             if not coord in explored:
                 # if the leaf node is the goal state
                 if problem.isGoalState(coord):
                     # we are done, return the list of actions that got us to this susccesful node
                     # Without the last direction, never completes, so push that last direction into the list of actions for this node
-                    # If we find a goal node, we return all the actions taken to this node (lookup frontier for goal node)
+                    # If we find a goal node, we return all the actions taken
+                    # to this node (lookup frontier for goal node)
                     return actions + [direction]
 
-                # Else, update the frontier with the node, and actions taken to get to that node, and the new direction
+                # If not, update the frontier with the new node, actions taken
+                # to get to that node, and the final direction
                 frontier.push((coord, actions + [direction]))
-                # And update the explored region
+                # Also update the explored region
                 explored.add(coord)
-    # Else return empty list of actions            
+
+    # Else return empty list of actions
     return []
 
 
 def breadthFirstSearch(problem):
     """
-    Search the shallowest nodes in the search tree first.
-    [2nd Edition: p 73, 3rd Edition: p 82]
+    Search the shallowest nodes in the search tree first; guaranteed we'll find a solution, because we'll check every node eventually!
+    
+    Inputs:
+    ----
+    problem: A problem to search through and setup. 
+
+    Returns:
+    ----
+    path: list of actions actions that reach the goal state.  
     """
+
+    # This time, let's use a Queue data type (FIFO)
     frontier = util.Queue()
-    frontier.push( (problem.getStartState(), []) )
-    visited = []
+    # Initialize the explored region
+    explored = set()
+
+    # Push the root node to the frontier, in the form: node.state, node.actions
+    frontier.push((problem.getStartState(), []))
+    
+    # while it's not empty
     while not frontier.isEmpty():
+
+        # pop the FIRST leaf from the frontier (using FIFO)
         node, actions = frontier.pop()
+
+        # And if it's a goal state
+        if problem.isGoalState(node):
+            # Return the list of actions that got us to that node
+            return actions
+
+        # If we are not done, get the successors of the node and for each successor node, in every direction
         for coord, direction, steps in problem.getSuccessors(node):
-            if not coord in visited:
-                if problem.isGoalState(coord):
-                    return actions + [direction]
+            # If we've never been there
+            if not coord in explored:
+                # Otherwise push the new node into the frontier with the path that got us there and the direction we need to reach that successor
                 frontier.push((coord, actions + [direction]))
-                visited.append(coord)
+                # Also update the explored region for Graph Search instead of Tree Search
+                explored.add(coord)
     return []
 
 
 def uniformCostSearch(problem):
-    "Search the node of least total cost first. "
-    frontier = util.PriorityQueue()
-    frontier.push( (problem.getStartState(), []), 0)
-    visited = []
-    while not frontier.isEmpty():
-        node, actions = frontier.pop()
-        if problem.isGoalState(node):
-            return actions
-        visited.append(node)
-        for coord, direction, steps in problem.getSuccessors(node):
-            if not coord in visited:
-                new_actions = actions + [direction]
-                frontier.push((coord, new_actions), problem.getCostOfActions(new_actions))
-    return []
-
-
-def nullHeuristic(state, problem=None):
     """
-    A heuristic function estimates the cost from the current state to the nearest
-    goal in the provided SearchProblem.  This heuristic is trivial.
+    Search the nodes with the cheapest cost first; also known as cheapest first search.
+    
+    Inputs:
+    ----
+    problem: A problem to search through and setup. 
+
+    Returns:
+    ----
+    path: list of actions actions that reach the goal state.  
     """
-    return 0
 
-
-def aStarSearch(problem, heuristic=nullHeuristic):
-    "Search the node that has the lowest combined cost and heuristic first."    
-    visited = []
-    frontier = util.PriorityQueue()
-    start = problem.getStartState()
-    frontier.push((start,[]), heuristic(start, problem))
-    while not frontier.isEmpty():
-        node, actions = frontier.pop()
-        if problem.isGoalState(node):
-            return actions
-        visited.append(node)
-        for coord, direction, cost in problem.getSuccessors(node):
-            if not coord in visited:
-                new_actions = actions + [direction]
-                score = problem.getCostOfActions(new_actions) + heuristic(coord, problem)
-                frontier.push( (coord, new_actions), score)
-    return []
-
+   
 
 # Abbreviations
 bfs = breadthFirstSearch
